@@ -83,6 +83,12 @@ const Navbar = () => {
                       Videography & Photography
                     </NavLink>
                   </li>
+
+                  <li className=''>
+                    <NavLink className={styling} to="/addProduct">
+                   AddProduct
+                    </NavLink>
+                  </li>
                 </ul>
               </li>
 
