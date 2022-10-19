@@ -3,7 +3,7 @@
      background-size:cover;
      background-image: cover;
      background-repeat: no-repeat;
-    height: 500px;;
+    height: 100vh;;
      object-fit: cover;
      background-image: center;
 }

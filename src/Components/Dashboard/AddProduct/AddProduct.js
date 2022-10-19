@@ -14,44 +14,100 @@ function AddProduct() {
     reset,
   } = useForm();
 
+  // const onSubmit = async (data) => {
+  //   const img = data.image[0];
+  //   const img1 = data.img1[0];
+  //   const img2 = data.img2[0];
+
+  //   const form = new FormData();
+  //   form.append("productImg", img);
+  //   form.append("productImg1", img1);
+  //   form.append("productImg2", img2);
+
+  //   const productinfo = {
+  //     name: data.name,
+  //     oldPrice: data.oldprice,
+  //     newPrice: data.newprice,
+  //     details: data.description,
+  //   };
+
+  //   try {
+  //     const { data } = await axios.post("https://api.com.quickinun.com/server/upload", form);
+  //     // console.log(data);
+
+  //     if (data?.uploaded) {
+  //       const { productImg, productImg1, productImg2 } = data;
+  //       const { data: productData } = await axios.post(
+  //         "https://api.com.quickinun.com/server/add-product",
+  //         { ...productinfo, image: productImg?.[0]?.filename, img1: productImg1?.[0]?.filename, img2: productImg2?.[0]?.filename }
+  //       );
+
+  //       productData?.acknowledged
+  //         ? toast.success("Product successfully added")
+  //         : toast.error("Unable to added product");
+  //     } else {
+  //       toast.error("Unable to upload image");
+  //     }
+  //   } catch (err) { }
+
+  //   reset();
+  // };
+
+
+  // const [user] = useAuthState(auth);
+  const imageStorageKey = "05d4c3c8e214922ac75f1c1d5c5cb38e";
+ 
+ 
+  // const {
+  //   register,
+  //   formState: { errors },
+  //   handleSubmit,
+  // } = useForm();
+
   const onSubmit = async (data) => {
-    const img = data.image[0];
-    const img1 = data.img1[0];
-    const img2 = data.img2[0];
+    console.log(data);
+    const image = data.Image[0];
+    const formData = new FormData();
+    formData.append("image", image);
+    const url = `https://api.imgbb.com/1/upload?key=${imageStorageKey}`;
+    fetch(url, {
+      method: "POST",
+      body: formData,
+    })
+      .then((response) => response.json())
+      .then(result => {
+        
+        if (result.success) {
+          const img = result.data.url;
+          const perse={
+            name:data.name,
+            email:data?.email,
+            price:data.price,
+            minimumQuantity:data.minimumQuantity,
+            maximumQuantity:data.maximumQuantity,
+            description:data.description,
+            img:img
+          }
 
-    const form = new FormData();
-    form.append("productImg", img);
-    form.append("productImg1", img1);
-    form.append("productImg2", img2);
-
-    const productinfo = {
-      name: data.name,
-      oldPrice: data.oldprice,
-      newPrice: data.newprice,
-      details: data.description,
-    };
-
-    try {
-      const { data } = await axios.post("https://api.com.quickinun.com/server/upload", form);
-      // console.log(data);
-
-      if (data?.uploaded) {
-        const { productImg, productImg1, productImg2 } = data;
-        const { data: productData } = await axios.post(
-          "https://api.com.quickinun.com/server/add-product",
-          { ...productinfo, image: productImg?.[0]?.filename, img1: productImg1?.[0]?.filename, img2: productImg2?.[0]?.filename }
-        );
-
-        productData?.acknowledged
-          ? toast.success("Product successfully added")
-          : toast.error("Unable to added product");
-      } else {
-        toast.error("Unable to upload image");
-      }
-    } catch (err) { }
-
-    reset();
+          // send to database
+          // const url=`https://parse-and-co.onrender.com/pareses`
+         fetch('http://localhost:5000/pareses', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(perse),
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        toast.success('Success',data)}) }
+        console.log(result);
+       toast.success('Success',data)
+      });
   };
+
+
 
   return (
     <div className="mb-10 h-full  w-full  px-4">
@@ -65,176 +121,234 @@ function AddProduct() {
             Add Product
           </p>
           <form onSubmit={handleSubmit(onSubmit)}>
-            <div>
-              <section className='flex flex-col gap-5'>
-                <lable className="text-sm font-medium leading-none text-gray-800">
-                  Product Main Image <br />
-                  <small className="text-green-600 leading-6"> please choose a file</small>
+                <div className="form-control w-full max-w-xs">
+                  <label className="label">
+                    <span className="label-text">Name</span>
+                  </label>
                   <input
-                    aria-label="enter email adress"
-                    role="input"
-                    accept=".jpg, .png, .jpeg"
-                    type="file"
-                    className="bg-gray-200 border rounded focus:outline-none text-xs font-medium leading-none text-gray-800 py-3 w-full pl-3 mt-2"
-                    {...register("image", {
+                    type="name"
+                    placeholder="name"
+                    name="name"
+                    className="input input-bordered w-full max-w-xs"
+                    {...register("name", {
                       required: {
                         value: true,
-                        message: "Image is Required",
+                        message: "name is required",
+                      },
+                      pattern: {
+                        value: /[A-Za-z]{3}/,
+                        message: "your name is not required",
                       },
                     })}
                   />
-                </lable>
-                <lable className="text-sm font-medium leading-none text-gray-800">
-                  Product Secondary Image - 1 <br />
-                  <small className="text-green-600 leading-6"> please choose a file</small>
-                  <input
-                    aria-label="enter email adress"
-                    role="input"
-                    accept=".jpg, .png, .jpeg"
-                    type="file"
-                    className="bg-gray-200 border rounded focus:outline-none text-xs font-medium leading-none text-gray-800 py-3 w-full pl-3 mt-2"
-                    {...register("img1", {
-                      required: {
-                        value: false,
-                        message: "Image is Required",
-                      },
-                    })}
-                  />
-                </lable>
-                <lable className="text-sm font-medium leading-none text-gray-800">
-                  Product Secondary Image - 2 <br />
-                  <small className="text-green-600 leading-6"> please choose a file</small>
-                  <input
-                    aria-label="enter email adress"
-                    role="input"
-                    accept=".jpg, .png, .jpeg"
-                    type="file"
-                    className="bg-gray-200 border rounded focus:outline-none text-xs font-medium leading-none text-gray-800 py-3 w-full pl-3 mt-2"
-                    {...register("img2", {
-                      required: {
-                        value: false,
-                        message: "Image is Required",
-                      },
-                    })}
-                  />
-                </lable>
-              </section>
-              <label className="label">
-                {errors.fileimage?.type === "required" && (
-                  <span className="label-text-alt text-red-500">
-                    {errors.fileimage.message}
-                  </span>
-                )}
-              </label>
-            </div>
-            <div>
-              <lable className="text-sm font-medium leading-none text-gray-800">
-                Product Name
-              </lable>
-              <input
-                aria-label="enter email adress"
-                role="input"
-                type="text"
-                className="bg-gray-200 border rounded focus:outline-none text-xs font-medium leading-none text-gray-800 py-3 w-full pl-3 mt-2"
-                {...register("name", {
-                  required: {
-                    value: true,
-                    message: "Product name Required",
-                  },
-                })}
-              />
-              <label className="label">
-                {errors.name?.type === "required" && (
-                  <span className="label-text-alt text-red-500">
-                    {errors.name.message}
-                  </span>
-                )}
-              </label>
-            </div>
-            <div>
-              <lable className="text-sm font-medium leading-none text-gray-800">
-                Old Price
-              </lable>
-              <input
-                aria-label="enter email adress"
-                role="input"
-                type="number"
-                className="bg-gray-200 border rounded focus:outline-none text-xs font-medium leading-none text-gray-800 py-3 w-full pl-3 mt-2"
-                {...register("oldprice", {
-                  required: {
-                    value: true,
-                    message: "Old Price is Required",
-                  },
-                })}
-              />
-              <label className="label">
-                {errors.oldprice?.type === "required" && (
-                  <span className="label-text-alt text-red-500">
-                    {errors.oldprice.message}
-                  </span>
-                )}
-              </label>
-            </div>
-            <div>
-              <lable className="text-sm font-medium leading-none text-gray-800">
-                New Price
-              </lable>
-              <input
-                aria-label="enter email adress"
-                role="input"
-                type="number"
-                className="bg-gray-200 border rounded focus:outline-none text-xs font-medium leading-none text-gray-800 py-3 w-full pl-3 mt-2"
-                {...register("newprice", {
-                  required: {
-                    value: true,
-                    message: "New Price is Required",
-                  },
-                })}
-              />
-              <label className="label">
-                {errors.newprice?.type === "required" && (
-                  <span className="label-text-alt text-red-500">
-                    {errors.newprice.message}
-                  </span>
-                )}
-              </label>
-            </div>
+                  <label className="label">
+                    {errors.name?.type === "required" && (
+                      <span className="label-text-alt text-red-500">
+                        {errors.name.message}
+                      </span>
+                    )}
+                    {errors.name?.type === "pattern" && (
+                      <span className="label-text-alt text-red-500">
+                        {errors.name.message}
+                      </span>
+                    )}
+                  </label>
+                </div>
 
-            <div>
-              <lable className="text-sm font-medium leading-none text-gray-800">
-                Product description
-              </lable>
-              <input
-                aria-label="enter email adress"
-                role="input"
-                type="text"
-                className="bg-gray-200 border rounded focus:outline-none text-xs font-medium leading-none text-gray-800 py-3 w-full pl-3 mt-2"
-                {...register("description", {
-                  required: {
-                    value: true,
-                    message: "Description is Required",
-                  },
-                })}
-              />
-              <label className="label">
-                {errors.description?.type === "required" && (
-                  <span className="label-text-alt text-red-500">
-                    {errors.description.message}
-                  </span>
-                )}
-              </label>
-            </div>
+                <div className="form-control w-full max-w-xs">
+                  
+                
+                  <label className="label">
+                    {errors.email?.type === "required" && (
+                      <span className="label-text-alt text-red-500">
+                        {errors.email.message}
+                      </span>
+                    )}
+                    {errors.email?.type === "pattern" && (
+                      <span className="label-text-alt text-red-500">
+                        {errors.email.message}
+                      </span>
+                    )}
+                  </label>
+                </div>
 
-            <div className="mt-8">
-              <button
-                role="button"
-                aria-label="create my account"
-                className="focus:ring-2 focus:ring-offset-2 focus:bg-green-600 leading-none text-white focus:outline-none bg-green-600 border rounded hover:bg-green-800 py-4 w-full font-bold text-lg"
-              >
-                Add product
-              </button>
-            </div>
-          </form>
+                <div className="form-control w-full max-w-xs">
+                  <label className="label">
+                    <span className="label-text">Price</span>
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="price"
+                    name="price"
+                    className="input input-bordered w-full max-w-xs"
+                    {...register("price", {
+                      required: {
+                        value: true,
+                        message: "price is required",
+                      },
+                      pattern: {
+                        value: /[0-9]/,
+                        message: "your price is not required",
+                      },
+                    })}
+                  />
+                  <label className="label">
+                    {errors.price?.type === "required" && (
+                      <span className="label-text-alt text-red-500">
+                        {errors.price.message}
+                      </span>
+                    )}
+                    {errors.price?.type === "pattern" && (
+                      <span className="label-text-alt text-red-500">
+                        {errors.price.message}
+                      </span>
+                    )}
+                  </label>
+                </div>
+
+                <div className="form-control w-full max-w-xs">
+                  <label className="label">
+                    <span className="label-text"> Minimum Quantity</span>
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="minimumQuantity"
+                    name="minimumQuantity"
+                    className="input input-bordered w-full max-w-xs"
+                    {...register(`minimumQuantity`, {
+                      required: {
+                        value: true,
+                        message: "minimumQuantity is required",
+                      },
+                      pattern: {
+                        value: /[0-9]/,
+                        message: "your minimumQuantity is not required",
+                      },
+                    })}
+                  />
+
+                  <label className="label">
+                    {errors.minimumQuantity?.type === "required" && (
+                      <span className="label-text-alt text-red-500">
+                        {errors.minimumQuantity.message}
+                      </span>
+                    )}
+                    {errors.minimumQuantity?.type === "pattern" && (
+                      <span className="label-text-alt text-red-500">
+                        {errors.minimumQuantity.message}
+                      </span>
+                    )}
+                  </label>
+                </div>
+                <div className="form-control w-full max-w-xs">
+                  <label className="label">
+                    <span className="label-text"> Maximum Quantity</span>
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="Maximum Quantity"
+                    name="maximumQuantity"
+                    className="input input-bordered w-full max-w-xs"
+                    {...register(`maximumQuantity`, {
+                      required: {
+                        value: true,
+                        message: "maximumQuantity is required",
+                      },
+                      pattern: {
+                        value: /[0-9]/,
+                        message: "your maximumQuantity is not required",
+                      },
+                    })}
+                  />
+
+                  <label className="label">
+                    {errors.maximumQuantity?.type === "required" && (
+                      <span className="label-text-alt text-red-500">
+                        {errors.maximumQuantity.message}
+                      </span>
+                    )}
+                    {errors.maximumQuantity?.type === "pattern" && (
+                      <span className="label-text-alt text-red-500">
+                        {errors.maximumQuantity.message}
+                      </span>
+                    )}
+                  </label>
+                </div>
+
+                <div className="form-control w-full max-w-xs">
+                  <label className="label">
+                    <span className="label-text">Photo</span>
+                  </label>
+                  <input
+                    type="file"
+                    placeholder="Image"
+                    name="Image"
+                    className="input input-bordered w-full max-w-xs"
+                    {...register("Image", {
+                      required: {
+                        value: true,
+                        message: "Image is required",
+                      },
+                      pattern: {
+                        value: true,
+                        message: "your Image is not required",
+                      },
+                    })}
+                  />
+                  <label className="label">
+                    {errors.Image?.type === "required" && (
+                      <span className="label-text-alt text-red-500">
+                        {errors.Image.message}
+                      </span>
+                    )}
+                    {errors.Image?.type === "pattern" && (
+                      <span className="label-text-alt text-red-500">
+                        {errors.Image.message}
+                      </span>
+                    )}
+                  </label>
+                </div>
+
+                <div className="form-control w-full max-w-xs">
+                  <label className="label">
+                    <span className="label-text">Description</span>
+                  </label>
+                  <textarea
+                    type="text"
+                    placeholder="description"
+                    name="description"
+                    className="input input-bordered w-full max-w-xs"
+                    {...register("description", {
+                      required: {
+                        value: true,
+                        message: "description is required",
+                      },
+                      minLength: {
+                        value: 30,
+                        message: "your description  must be 50 character",
+                      },
+                    })}
+                  />
+                  <label className="label">
+                    {errors.description?.type === "required" && (
+                      <span className="label-text-alt text-red-500">
+                        {errors.description.message}
+                      </span>
+                    )}
+                    {errors.description?.type === "minLength" && (
+                      <span className="label-text-alt text-red-500">
+                        {errors.description.message}
+                      </span>
+                    )}
+                  </label>
+                </div>
+
+                <input
+                  className="w-full max-w-xs btn"
+                  type="submit"
+                  value="Submit"
+                />
+              </form>
         </div>
       </div>
     </div>
